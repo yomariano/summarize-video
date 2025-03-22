@@ -1,0 +1,17 @@
+Summary:
+
+This video addresses a bug related to record location discrepancies in a process tree after moving and approving records.  The core issue is that moving records between states (e.g., from "culture" to "harvest") doesn't always update the tree correctly, particularly when a record is involved in multiple steps. 
+
+Here's a breakdown of the problem and proposed solution:
+
+*   **The Problem:** Moving records, especially when they're part of multiple steps, can lead to discrepancies between the "latest version" of a process and the "approved" state.  Specifically, approving a record can cause it to become an "orphan record" – existing in multiple locations in the tree.  This is most evident with the "culture" and "medium" records.
+*   **Limited Scope:** The bug primarily affects records involved in step-to-step relationships, not higher-level operations or dependencies.
+*   **Illustrative Example:** The video uses the "culture" and "medium" records as a concrete example. Moving the "culture" record to "harvest" and the "medium" record to "harvest" highlights the issue.
+*   **Current Behavior:**  The latest version of the process shows the correct locations, but the "approved" state still reflects the old locations, and you receive messages indicating that records are “orphaned”.
+*   **Proposed Solution (Rendering Perspective):** The speaker suggests a rendering workaround:
+    *   **Duplicate Rendering:**  Display the "orphan" record twice, visually indicating its presence in both locations.  This could be achieved through color-coding or other visual cues.
+    *   **Record Dislocation Indication:**  Clearly mark the record's location in the "approved" state to show it's in a different state than the latest version.
+    *   **Higher-Level Approval:**  The speaker suggests that the higher-level record needs to be approved to reflect the change, mirroring the approach used for archiving.
+*   **Technical Feasibility:** The speaker acknowledges that the technical feasibility of this rendering solution is uncertain but suggests it's a viable approach from a visual perspective.
+
+In essence, the video describes a bug that creates a confusing visual representation of process data and proposes a workaround to maintain clarity while the underlying issue is addressed.
