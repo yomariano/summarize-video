@@ -124,13 +124,14 @@ def summarize_with_gemma(transcript, frame_paths, model_name, max_frames=5, max_
         image = Image.open(frame_path).convert("RGB")
         images.append(image)
     
-    # Create input prompt text with correct image tokens
-    # Gemma 3 expects <start_of_image> token for each image
+    # Create prompt text with the required <start_of_image> token for each image
     prompt_text = f"Summarize this video based on the transcript and key frames.\n\nTranscript: {transcript}\n\nKey frames:"
-    for _ in range(len(images)):
-        prompt_text += f" {processor.image_token}"
     
-    # Process inputs with processor
+    # Add the image tokens to the prompt - one for each image
+    for _ in range(len(images)):
+        prompt_text += f" <start_of_image>"
+    
+    # Process text and images - processor will handle image tokens
     inputs = processor(
         text=prompt_text, 
         images=images,
@@ -147,13 +148,14 @@ def summarize_with_gemma(transcript, frame_paths, model_name, max_frames=5, max_
             top_p=0.9
         )
     
-    # Get the length of input tokens to extract only the generated text
-    input_length = inputs.input_ids.shape[1]
+    # Decode the output tokens
+    summary = processor.decode(output_ids[0], skip_special_tokens=True)
     
-    # Decode only the newly generated tokens
-    summary = processor.decode(output_ids[0][input_length:], skip_special_tokens=True)
+    # Extract just the generated part (not the input prompt)
+    # This is a simplified approach - might need adjustment
+    summary = summary.replace(prompt_text, "").strip()
     
-    return summary.strip()
+    return summary
 
 
 def main():
@@ -162,11 +164,11 @@ def main():
     parser.add_argument("--output-dir", default="frames", help="Directory to save extracted frames")
     parser.add_argument("--model", default="google/gemma-3-4b-it", help="Gemma model name/path")
     parser.add_argument("--frame-rate", type=float, default=1, help="Frame extraction rate (fps)")
-    parser.add_argument("--max-frames", type=int, default=5, help="Maximum frames to process")
-    parser.add_argument("--whisper-model", default="base", 
+    parser.add_argument("--max-frames", type=int, default=3, help="Maximum frames to process")
+    parser.add_argument("--whisper-model", default="tiny", 
                         choices=get_whisper_model_sizes(),
                         help="Whisper model size")
-    parser.add_argument("--max-tokens", type=int, default=500, help="Maximum tokens to generate")
+    parser.add_argument("--max-tokens", type=int, default=2500, help="Maximum tokens to generate")
     parser.add_argument("--cleanup", action="store_true", help="Remove extracted frames after processing")
     parser.add_argument("--check-deps", action="store_true", help="Check dependencies and exit")
     args = parser.parse_args()

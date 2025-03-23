@@ -1,6 +1,6 @@
 # Video Summarizer with Gemma 3
 
-This project creates summaries of videos using Google's Gemma 3 multimodal model. It extracts key frames and transcribes audio from the video, then uses Gemma 3 to generate a concise summary based on this information.
+This project creates summaries of videos using Google's Gemma 3 multimodal model. It extracts key frames and transcribes audio from the video, then uses Gemma 3 to generate a concise summary based on this information. It supports both local video files and YouTube URLs via a command-line interface or REST API.
 
 ## How It Works
 
@@ -41,6 +41,8 @@ This project creates summaries of videos using Google's Gemma 3 multimodal model
 
 ## Usage
 
+### Command Line Interface
+
 Basic usage:
 
 ```bash
@@ -58,6 +60,71 @@ python src/summarize_video.py path/to/your/video.mp4 \
   --max-tokens 300 \
   --cleanup
 ```
+
+### API Server
+
+The project also includes a REST API for integration with web applications:
+
+1. Start the API server:
+   ```bash
+   python src/start_api.py
+   ```
+
+2. Server options:
+   ```bash
+   python src/start_api.py --host 127.0.0.1 --port 8080 --reload
+   ```
+
+   - `--host`: Host to bind the server to (default: 0.0.0.0)
+   - `--port`: Port to bind the server to (default: 8000)
+   - `--reload`: Enable auto-reload for development
+   - `--check-deps`: Check dependencies and exit
+
+3. API endpoints:
+
+   - `POST /api/youtube`: Submit a YouTube URL for processing
+     ```json
+     {
+       "url": "https://www.youtube.com/watch?v=example",
+       "whisper_model": "base",
+       "frame_rate": 1,
+       "max_frames": 5,
+       "max_tokens": 500,
+       "model_name": "google/gemma-3-4b-it",
+       "cleanup": true
+     }
+     ```
+
+   - `POST /api/upload`: Upload a video file for processing
+     ```
+     # Multipart form data:
+     file: [video file]
+     whisper_model: base
+     frame_rate: 1
+     max_frames: 5
+     max_tokens: 500
+     model_name: google/gemma-3-4b-it
+     cleanup: true
+     ```
+
+   - `GET /api/jobs/{job_id}`: Check job status
+   - `GET /api/download/video/{job_id}`: Download processed video
+   - `GET /api/download/summary/{job_id}`: Download generated summary
+   - `DELETE /api/jobs/{job_id}`: Delete job and clean up resources
+
+4. Example with curl:
+   ```bash
+   # Submit a YouTube URL
+   curl -X POST http://localhost:8000/api/youtube \
+     -H "Content-Type: application/json" \
+     -d '{"url": "https://www.youtube.com/watch?v=example"}'
+   
+   # Check job status
+   curl http://localhost:8000/api/jobs/job_1234567890
+   
+   # Download summary
+   curl -O http://localhost:8000/api/download/summary/job_1234567890
+   ```
 
 ### Options
 
